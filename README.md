@@ -118,4 +118,3 @@ prepare this manuscript snapshot. Copyright therefore remains with the
 respective authors and original Sedapp contributors. Users should obtain the
 authors' permission before redistribution or reuse beyond inspection and
 reproduction of the reported results.
-
