@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use SeaVarinv, please cite the associated manuscript."
 title: "SeaVarinv: An Open-Source, GUI-Driven Forward-Inverse Stratigraphic Simulation Tool for Geoscience Education"
 type: software
-repository-code: "https://github.com/joj656582-bot/SeaVarinv"
-url: "https://github.com/joj656582-bot/SeaVarinv"
+repository-code: "https://github.com/lihua196/SeaVarinv"
+url: "https://github.com/lihua196/SeaVarinv"
 authors:
   - family-names: Qiu
     given-names: Shi

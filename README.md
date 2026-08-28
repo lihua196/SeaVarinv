@@ -1,6 +1,6 @@
 # SeaVarinv — A Forward–Inverse Stratigraphic Modelling Teaching Tool
 
-Repository: https://github.com/joj656582-bot/SeaVarinv
+Repository: https://github.com/lihua196/SeaVarinv
 
 `zonghe.py` is a single self-contained script that packages a complete
 computational-stratigraphy workflow for the classroom:
