@@ -2,6 +2,8 @@ cff-version: 1.2.0
 message: "If you use SeaVarinv, please cite the associated manuscript."
 title: "SeaVarinv: An Open-Source, GUI-Driven Forward-Inverse Stratigraphic Simulation Tool for Geoscience Education"
 type: software
+version: "1.0.0"
+license: MIT
 repository-code: "https://github.com/lihua196/SeaVarinv"
 url: "https://github.com/lihua196/SeaVarinv"
 authors:
@@ -16,7 +18,7 @@ authors:
   - family-names: Li
     given-names: Jingzhe
     email: lijingzhe@qust.edu.cn
-date-released: 2026-08-20
+date-released: 2026-09-04
 keywords:
   - computational stratigraphy
   - inverse problems

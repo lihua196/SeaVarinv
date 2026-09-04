@@ -111,10 +111,11 @@ The smoke test was verified on 20 August 2026 with Python 3, NumPy 1.26.4,
 SciPy 1.11.4, and Matplotlib 3.8.0. The manuscript reference environment is
 Python 3.12.12, NumPy 2.2.5, SciPy 1.16.2, and Matplotlib 3.10.3.
 
-## Licence status
+## Licences
 
-No software or data licence was supplied with the source materials used to
-prepare this manuscript snapshot. Copyright therefore remains with the
-respective authors and original Sedapp contributors. Users should obtain the
-authors' permission before redistribution or reuse beyond inspection and
-reproduction of the reported results.
+This repository contains software and research data under separate open licences:
+
+* Original source code, including `zonghe.py` and the Python port in `sedapp_py.py`: [MIT License](LICENSE-CODE).
+* Numerical datasets in `checkpoints/`, generated figures in `figures/`, and the accompanying data and figure-mapping documentation: [Creative Commons Attribution 4.0 International (CC BY 4.0)](LICENSE-DATA).
+
+See [LICENSE](LICENSE) for the scope of each licence. Any external material added in the future remains subject to its own licence.

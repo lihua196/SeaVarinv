@@ -1,0 +1,20 @@
+SeaVarinv licensing
+===================
+
+This repository contains both software and research data. Different licence
+terms apply to the two categories:
+
+1. Software
+   The original source code in this repository, including `zonghe.py` and
+   `sedapp_py.py`, is licensed under the MIT License. See `LICENSE-CODE`.
+
+2. Data and generated research outputs
+   The numerical datasets in `checkpoints/`, the generated figures in
+   `figures/`, and the accompanying data and figure-mapping documentation are
+   licensed under the Creative Commons Attribution 4.0 International License
+   (CC BY 4.0). See `LICENSE-DATA`.
+
+The copyright and licence notices in this repository must be retained. Any
+external material added in the future remains subject to its own licence and
+is not relicensed by this notice.
+

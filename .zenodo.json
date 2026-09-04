@@ -1,0 +1,22 @@
+{
+  "title": "SeaVarinv: An Open-Source, GUI-Driven Forward-Inverse Stratigraphic Simulation Tool for Geoscience Education",
+  "upload_type": "software",
+  "description": "Version 1.0.0 of SeaVarinv, including the GUI-driven forward-inverse stratigraphic simulation software, reproducible numerical checkpoints, generated research outputs, and figure-to-data mappings. Original software is licensed under the MIT License; numerical datasets and generated research outputs are licensed under CC BY 4.0.",
+  "creators": [
+    {"name": "Qiu, Shi"},
+    {"name": "Li, Hua"},
+    {"name": "Liu, Yunuo"},
+    {"name": "Dai, Yang"},
+    {"name": "Li, Jingzhe"}
+  ],
+  "keywords": [
+    "computational stratigraphy",
+    "inverse problems",
+    "geoscience education",
+    "Sedapp",
+    "regularisation",
+    "sea-level reconstruction"
+  ],
+  "access_right": "open",
+  "license": "other-open"
+}
