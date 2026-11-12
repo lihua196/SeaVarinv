@@ -1111,6 +1111,8 @@ def fig4_variational(R):
     """J landscape over two knot values with the Gauss-Newton path overlaid,
     plus the misfit-vs-regularisation trade-off measured from the lambda
     sweep."""
+    from matplotlib.ticker import FuncFormatter
+
     jl = R['jlandscape']
     GI, GJ = np.meshgrid(jl['grid_i'], jl['grid_j'], indexing='ij')
     it = R['iterates']
@@ -1122,7 +1124,9 @@ def fig4_variational(R):
     cs = ax.contourf(GI, GJ, jl['J'], levels=lv, cmap='viridis')
     ax.contour(GI, GJ, jl['J'], levels=lv[::4], colors='w', linewidths=0.4,
                alpha=0.6)
-    plt.colorbar(cs, ax=ax, label='Objective $J$')
+    plt.colorbar(cs, ax=ax, label='Objective $J$',
+                 format=FuncFormatter(lambda value, pos:
+                     f'{value:,.0f}' if abs(value) >= 10000 else f'{value:.0f}'))
     ik, jk = jl['i_knot'], jl['j_knot']
     ax.plot(it[:, ik], it[:, jk], 'o-', color='tab:red', ms=4, lw=1.5,
             label='Gauss-Newton path', zorder=5)
@@ -1158,6 +1162,8 @@ def fig4_variational(R):
 def fig5_iterations(R):
     """Iterations 0, 2, 5, 10, final: sea-level curve evolution with a
     J-decrease inset — what a student watches converge in the GUI."""
+    from matplotlib.ticker import FuncFormatter, NullFormatter
+
     it = R['iterates']
     hist = R['iter_hist']
     calls = hist[:, 0] - hist[0, 0] + 1   # forward calls spent in this inversion
@@ -1172,15 +1178,23 @@ def fig5_iterations(R):
                 label=f'iteration {ip}')
         ax.set_title(f'iteration {ip}', fontsize=10)
         ax.set_xlabel('Time (Ma)')
+        ax.yaxis.set_major_formatter(FuncFormatter(
+            lambda value, pos: f'{value:g}'.replace('-', '−')))
         if ax is axs[0]:
             ax.set_ylabel('Relative sea level (m)')
         # J-decrease inset
         axin = ax.inset_axes([0.52, 0.55, 0.44, 0.40])
         axin.semilogy(calls, hist[:, 1], 'o-', ms=2.5, lw=1,
                       color='tab:blue')
-        axin.axvline(calls[min(ip, len(hist) - 1)], color='tab:red', lw=1)
+        red_line = axin.axvline(calls[min(ip, len(hist) - 1)], color='tab:red', lw=1)
+        if ax is axs[0]:
+            fig.legend(handles=[red_line],
+                       labels=['Cumulative forward calls at the displayed iteration'],
+                       loc='upper center', bbox_to_anchor=(0.5, 0.88),
+                       fontsize=8.5, frameon=False)
         axin.set_title('$J$ vs fwd calls', fontsize=6.5)
         axin.tick_params(labelsize=6)
+        axin.yaxis.set_minor_formatter(NullFormatter())
         axin.grid(alpha=0.3)
     axs[0].legend(fontsize=8, loc='upper right')
     fig.suptitle('Inversion step by step: the sea-level curve converges while '
@@ -1242,58 +1256,87 @@ def fig6_noise(R):
 
 # ── fig7: effect of lambda + L-curve ────────────────────────────────────────
 def fig7_lambda(R):
-    """Under- and over-regularised examples plus the L-curve used to pick
-    lambda objectively."""
+    """Plot the unchanged lambda sweep with readable labels and legends."""
+    from matplotlib.ticker import FuncFormatter, LogFormatterSciNotation
+
+    def weight(v):
+        if v and abs(v) < 0.001:
+            n = int(np.floor(np.log10(abs(v))))
+            return rf'$\mathdefault{{{v / 10.0**n:g}\times10^{{{n}}}}}$'
+        return f'{v:g}'
+
     lr = R['lam_results']
     lam = R['best_lam']
     kt = knot_times()
     td, ed = dense_truth()
-    fig, axs = plt.subplots(1, 3, figsize=(13.5, 4.0))
-
+    fig, axs = plt.subplots(1, 3, figsize=(13.5, 5.4))
     ax = axs[0]
     xs = np.array([roughness(lr[l]['e']) for l in LAMBDAS])
     ys = np.array([lr[l]['misfit'] for l in LAMBDAS])
-    ax.loglog(xs, ys, 'o-', color='tab:blue')
+    ax.loglog(xs, ys, 'o-', color='tab:blue',
+              label=r'$\lambda$ samples (line joins dots)')
+    positions = {1e-5: (.62, .68), 1e-4: (.87, .78), .001: (.65, .045),
+                 .01: (.87, .14), .1: (.89, .34), 1: (.61, .27), 10: (.55, .56)}
     for l, x, y in zip(LAMBDAS, xs, ys):
-        off = {0.1: (8, -2), 0.01: (8, 9), 0.001: (12, -9)}.get(l, (6, 5))
-        ax.annotate(f'{l:g}', (x, y), textcoords='offset points', xytext=off,
-                    fontsize=8)
+        if l in positions:
+            ax.annotate(weight(l), (x, y), xytext=positions[l],
+                        textcoords='axes fraction', ha='center', va='center',
+                        fontsize=8, arrowprops=dict(arrowstyle='-', color='0.45',
+                        lw=.65, shrinkA=3, shrinkB=5))
+        else:
+            ax.annotate(weight(l), (x, y), xytext=(7, -12) if l == 1000 else (6, 5),
+                        textcoords='offset points', fontsize=8)
     iB = LAMBDAS.index(lam)
-    ax.plot(xs[iB], ys[iB], 'o', ms=13, mfc='none', mec='tab:red', mew=2)
+    ax.plot(xs[iB], ys[iB], 'o', ms=13, mfc='none', mec='tab:red', mew=2,
+            label='L-curve choice (red circle)')
     ax.set_xlabel(r'Roughness $\int \dot e^2 dt$  (m$^2$/Ma)')
     ax.set_ylabel(r'Misfit $\frac{1}{2}\|(F-d)/\sigma\|^2$')
-    ax.set_title(f'(a) L-curve — knee at $\\lambda$={lam:g}')
+    ax.set_title('(a) L-curve — knee at ' + r'$\lambda$=' + weight(lam))
+    ax.legend(loc='upper center', bbox_to_anchor=(.5, -.23), fontsize=7.7,
+              frameon=False)
 
     ax = axs[1]
-    ax.plot(td, ed, 'k-', lw=2.2, label='Truth')
+    ax.plot(td, ed, 'k-', lw=2.2, label='Truth (black line)')
     iK = LAMBDAS.index(lam)
     picks = []
     if iK > 0:
         picks.append((LAMBDAS[max(0, iK - 1)], 'under-regularised'))
-    picks.append((lam, 'L-curve pick'))
-    picks.append((LAMBDAS[-1], 'over-regularised'))
+    picks.extend([(lam, 'L-curve pick'), (LAMBDAS[-1], 'over-regularised')])
     for (l, lab), c in zip(picks, ['tab:red', 'tab:blue', 'tab:green'][-len(picks):]):
-        ax.plot(kt, lr[l]['e'], 'o-', color=c, ms=4, lw=1.6,
-                label=f'{lab} $\\lambda$={l:g} (RMSE {lr[l]["rmse"]:.1f} m)')
+        label = ('_nolegend_' if lab == 'under-regularised' else
+                 lab + r' $\lambda$=' + weight(l) + f' (RMSE {lr[l]["rmse"]:.1f} m)')
+        ax.plot(kt, lr[l]['e'], 'o-', color=c, ms=4, lw=1.6, label=label)
     ax.set_xlabel('Time (Ma)')
     ax.set_ylabel('Relative sea level (m)')
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, pos: f'{v:g}'.replace('-', '−')))
     ax.set_title('(b) Under / optimal / over-regularised recoveries')
-    ax.legend(fontsize=8)
+    ax.legend(loc='upper center', bbox_to_anchor=(.5, -.23), fontsize=7.7,
+              frameon=False)
+    ax.text(.5, -.57, 'Coloured dots: control knots; lines: interpolated histories',
+            transform=ax.transAxes, ha='center', va='top', fontsize=7.4)
 
     ax = axs[2]
-    rmses = [lr[l]['rmse'] for l in LAMBDAS]
-    ax.semilogx(LAMBDAS, rmses, 'o-', color='tab:purple', lw=1.8)
-    ax.axvline(lam, color='tab:red', ls='--', lw=1.2)
+    ax.semilogx(LAMBDAS, [lr[l]['rmse'] for l in LAMBDAS], 'o-',
+                color='tab:purple', lw=1.8,
+                label=r'RMSE at sampled $\lambda$ (line joins dots)')
+    ax.axvline(lam, color='tab:red', ls='--', lw=1.2,
+               label=r'L-curve choice $\lambda$=' + weight(lam))
     ax.axvline(R['lam_minrmse'], color='tab:green', ls=':', lw=1.2,
-               label=f'min-RMSE $\\lambda$={R["lam_minrmse"]:g} (unknowable '
-               'in practice)')
-    ax.set_xlabel('$\\lambda$')
+               label=r'min-RMSE $\lambda$=' + weight(R['lam_minrmse']) +
+                     '\n(unknowable in practice)')
+    ax.set_xlabel(r'$\lambda$')
     ax.set_ylabel('Sea-level RMSE (m)')
-    ax.set_title('(c) Recovery error vs $\\lambda$')
-    ax.legend(fontsize=8)
+    ax.set_title(r'(c) Recovery error vs $\lambda$')
+    ax.legend(loc='upper center', bbox_to_anchor=(.5, -.23), fontsize=7.7,
+              frameon=False)
+    for ax in (axs[0], axs[2]):
+        ax.xaxis.set_major_formatter(LogFormatterSciNotation())
+        ax.xaxis.set_minor_formatter(LogFormatterSciNotation())
+    axs[0].yaxis.set_major_formatter(LogFormatterSciNotation())
+    axs[0].yaxis.set_minor_formatter(LogFormatterSciNotation())
     fig.suptitle('Choosing the regularisation weight: the L-curve criterion',
                  fontsize=12.5)
-    fig.tight_layout(rect=[0, 0, 1, 0.93])
+    fig.subplots_adjust(left=.07, right=.99, bottom=.34, top=.82, wspace=.40)
     savefig(fig, 'fig7_lambda_lcurve.png')
 
 
@@ -1316,7 +1359,8 @@ def fig8_tikhonov_vs_tv(R):
     ax.plot(kt, st['e_tv'], 's-', color='tab:orange', ms=4, lw=1.6,
             label=f'TV / IRLS (RMSE {st["rmse_tv"]:.2f} m, '
             f'r={st["r_tv"]:.3f})')
-    ax.axvline(T1 / 2, color='grey', ls=':', lw=1)
+    ax.axvline(T1 / 2, color='grey', ls=':', lw=1,
+               label=f'Sea-level step at {T1 / 2:g} Ma')
     ax.set_xlabel('Time (Ma)')
     ax.set_ylabel('Relative sea level (m)')
     ax.set_title('(a) Recovering an abrupt step from only 2 pseudo-wells\n'
@@ -1419,7 +1463,8 @@ def fig10_exercise(R):
     fig, axs = plt.subplots(2, 2, figsize=(12.0, 7.8))
 
     ax = axs[0, 0]
-    ax.plot(td, ed, 'b-', lw=2)
+    ax.plot(td, ed, 'b-', lw=2, label='Prescribed sea-level history')
+    ax.legend(fontsize=8, loc='upper right')
     ax.set_xlabel('Time (Ma)')
     ax.set_ylabel('Relative sea level (m)')
     ax.set_title('Stage 1 — "Run Forward": set the sea-level curve with the '
@@ -1460,9 +1505,12 @@ def fig10_exercise(R):
     lr = R['lam_results']
     xs = np.array([roughness(lr[l]['e']) for l in LAMBDAS])
     ys = np.array([lr[l]['misfit'] for l in LAMBDAS])
-    ax.loglog(xs, ys, 'o-', color='tab:blue')
+    ax.loglog(xs, ys, 'o-', color='tab:blue',
+              label='Misfit–roughness trade-off')
     iB = LAMBDAS.index(R['best_lam'])
-    ax.plot(xs[iB], ys[iB], 'o', ms=13, mfc='none', mec='tab:red', mew=2)
+    ax.plot(xs[iB], ys[iB], 'o', ms=13, mfc='none', mec='tab:red', mew=2,
+            label='L-curve-selected weight')
+    ax.legend(fontsize=8, loc='lower left')
     ax.set_xlabel(r'Roughness $\int \dot e^2 dt$')
     ax.set_ylabel('Misfit')
     ax.set_title('Stage 4 — "L-curve": pick $\\lambda$ objectively, then '
